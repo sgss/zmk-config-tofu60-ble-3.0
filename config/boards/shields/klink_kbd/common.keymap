@@ -225,7 +225,7 @@
         combo_device_layer {
             timeout-ms = <50>;
             require-prior-idle-ms = <125>; // keep the combo from arming mid-typing.
-            key-positions = <55 56>; // Fn + LCtrl
+            key-positions = <55 29>; // Fn + Ctrl
             bindings = <&mo 2>;
         };
     };
