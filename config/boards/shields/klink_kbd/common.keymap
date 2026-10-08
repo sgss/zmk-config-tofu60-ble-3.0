@@ -220,5 +220,13 @@
             key-positions = <1 11>; // 1!  and -_
             bindings = <&FW_VER>;
         };
+
+        // Fn (pos 55) + LCtrl (pos 56) pressed together -> momentary layer 2.
+        combo_device_layer {
+            timeout-ms = <50>;
+            require-prior-idle-ms = <125>; // keep the combo from arming mid-typing.
+            key-positions = <55 56>; // Fn + LCtrl
+            bindings = <&mo 2>;
+        };
     };
 };
