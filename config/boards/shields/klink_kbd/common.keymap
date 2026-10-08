@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 #define FW_VER zmk_firmware_version_261007
- 
+
 #if 1
 #define ZMK_BEHAVIORS_OMIT_CAPS_WORD        // &caps_word
 #define ZMK_BEHAVIORS_OMIT_KT               // &kt, Key Toggle
@@ -77,16 +77,16 @@
             bindings = <&mo>, <&kp>;
             display-name = "Layer-Tap(HP)";
         };
-        
+
         trans: transparent { display-name = "_Trans"; };
         none: none { display-name = "Key(None)"; };
-        
+
         #if 1
         out: outputs { display-name = "zmk_reserved_output_sel"; };
         ZMK_MACRO(Device_USB, bindings = <&out OUT_USB>;)
 
         bt: bluetooth { display-name = "zmk_reserved_bluetooth"; };
-        
+
         #define SHOW_LED 0xAB //A5-AF Reserved
         ZMK_MACRO(FW_VER, bindings = <&kp LCTRL &kp LALT &kp LSHIFT &kp LGUI &kp RCTRL &kp RALT &kp RSHIFT &kp RGUI>;)
         ZMK_MACRO(zmk_reserved_bt_clear_0, bindings = <&bt BT_SEL 0>, <&bt BT_CLR>, <&kp SHOW_LED>;)
@@ -127,9 +127,21 @@
             #binding-cells = <0>;
             hold-time-ms = <1000>;
         };
+
+        #define LOCK_LED 0xAC // A5-AF Reserved
+        ZMK_MACRO(z_kbd_lock_led, bindings = <&kp LOCK_LED>;)
+        kbd_lock: kbd_lock {
+            compatible = "zmk,behavior-hold-tap";
+            display-name = "KBD Lock LED";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <1000>;  // must hold this long to trigger the lock
+            bindings = <&z_kbd_lock_led>, <&none>;
+        };
+
         sys_reset: sysreset { display-name = "zmk_reserved_reset"; };
         bootloader: bootload { display-name = "zmk_reserved_bootloader"; };
-        
+
         bootloader_reset:bootloader_reset {
             compatible = "zmk,behavior-hold-tap";
             display-name = "RESET";
@@ -138,10 +150,10 @@
             tapping-term-ms = <3000>;  // delay amount in ms
             bindings = <&bootloader>, <&sys_reset>;
         };
-        
+
         studio_unlock: studio_unlock { display-name = "zmk_reserved_studio_unlock"; };
         #endif
-        
+
         //mouse move
         mmu:mouse_move_up {
             compatible = "zmk,behavior-tap-dance";

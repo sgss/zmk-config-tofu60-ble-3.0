@@ -18,6 +18,7 @@
 #include <zmk/events/hid_indicators_changed.h>
 #include <zmk/events/usb_conn_state_changed.h>
 #include <zmk/keymap.h>
+#include <zmk/pm.h>
 #include <zmk/split/bluetooth/peripheral.h>
 #include <zmk/usb.h>
 
@@ -50,6 +51,7 @@ struct indicator_state_t {
     uint8_t active_device;
     uint8_t battery;
     uint8_t flash_times;
+    uint8_t lock_show;
 } indicator_state;
 
 static void set_indicator_color(uint8_t bits) {
@@ -129,11 +131,22 @@ ZMK_SUBSCRIPTION(klink_usb_conn_switch, zmk_usb_conn_state_changed);
 //#endif // IS_ENABLED(CONFIG_ZMK_USB)
 
 #include <zmk/events/keycode_state_changed.h>
+
+static void kbd_lock_off_work_cb(struct k_work *work) {
+    indicator_state.lock_show = 0;
+    set_indicator_color(0); // turn the indicator off before sleeping
+    zmk_pm_soft_off();
+}
+K_WORK_DELAYABLE_DEFINE(kbd_lock_off_work, kbd_lock_off_work_cb);
+
 static int zmk_handle_keycode_user(struct zmk_keycode_state_changed *event) {
     zmk_key_t key = event->keycode;
     LOG_DBG("key 0x%X", key);
     if (key == 0xAB) {
         ble_active_profile_update();
+    } else if (key == 0xAC) {
+        indicator_state.lock_show = 1;
+        k_work_schedule(&kbd_lock_off_work, K_MSEC(1000));
     }
     return ZMK_EV_EVENT_HANDLED;
 }
@@ -224,6 +237,11 @@ void led_process_thread(void) {
         k_sleep(K_MSEC(20));
         static uint16_t led_timer_steps = 0;
         led_timer_steps++;
+
+        if (indicator_state.lock_show) {
+            set_indicator_color(0b111); // solid white until soft-off
+            continue;
+        }
 
         if (indicator_state.connection > 0) {
             static uint8_t profile_color_bits[3]= {0b011, 0b110, 0b101};
